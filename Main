@@ -1,0 +1,14 @@
+package backend;
+
+import frontend.InterfacciaCalcolatrice;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		InterfacciaCalcolatrice calcolatrice = new InterfacciaCalcolatrice();
+		calcolatrice.calcolatrice_on();
+
+	}
+
+}
