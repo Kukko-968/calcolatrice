@@ -1,0 +1,200 @@
+package frontend;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import javax.swing.JTextArea;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridLayout;
+
+public class InterfacciaCalcolatrice extends JFrame implements  ActionListener{
+	private JButton[] bottoni = {
+		new JButton("C"), new JButton("+/-"), new JButton("\u221A"), new JButton("x²"),
+		new JButton("7"), new JButton("8"), new JButton("9"), new JButton("/"),
+		new JButton("4"), new JButton("5"), new JButton("6"), new JButton("x"),
+	    new JButton("1"), new JButton("2"), new JButton("3"), new JButton("+"),
+	    new JButton("0"), new JButton("."), new JButton("="), new JButton("-")
+	};
+	private JPanel pTastiera;
+	private JPanel pAreaDiTesto;
+	private JTextArea t1;
+	private JTextArea t2;
+	private boolean radice = false,potenza = false,punto = false;
+	private double n = 0,ans = 0;
+	private char segno = '?';
+	
+	
+	public void initComponent() {
+		int i;
+		
+		pTastiera = new JPanel();
+		pTastiera.setLayout(new GridLayout(5,4,20,20));
+		for (i = 0;i < bottoni.length;i++) {
+			bottoni[i].addActionListener(this);
+			pTastiera.add(bottoni[i]);
+			bottoni[i].setBackground(Color.CYAN);
+		}
+		
+		t1 = new JTextArea("0",2,15);
+		t1.setEditable(false);
+		t1.setFont(new Font("Serif", Font.ITALIC, 28));
+		
+		t2 = new JTextArea("0",2,15);
+		t2.setEditable(false);
+		t2.setFont(new Font("Serif", Font.ITALIC, 28));
+		
+		pAreaDiTesto = new JPanel();
+		pAreaDiTesto.setLayout(new GridLayout(2,1));
+		pAreaDiTesto.add(t1);
+		pAreaDiTesto.add(t2);
+		
+		this.setLayout(new GridLayout(2,1));
+		this.add(pAreaDiTesto);
+		this.add(pTastiera);
+	}
+	
+	
+	public void calcolatrice_on(){
+		initComponent();
+		setVisible(true);
+		setSize(500,800);
+	}
+
+	
+	private double spostaNumeri() {
+		String temp;
+		int posOneg;
+		if (t2.getText().charAt(0) == '-') {
+			posOneg = -1;
+			temp = t2.getText().substring(1);
+		}else{
+			posOneg = 1;
+			temp = t2.getText();
+		}
+		if (radice && potenza) {
+			return Double.parseDouble(temp.substring(1,temp.length()-1)) * posOneg;
+		}else if (radice) {
+			return Math.sqrt(Double.parseDouble(temp.substring(1))) * posOneg;
+		}else if (potenza) {
+			return Double.parseDouble(temp.substring(0,temp.length()-1)) * Double.parseDouble(temp.substring(0,temp.length()-1)) * posOneg * posOneg;
+		}else {
+			return Double.parseDouble(temp) * posOneg;
+		}
+	}
+	
+	
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		JButton pressed = (JButton)arg0.getSource();
+        String s = pressed.getText();
+        switch (s) {
+        	case "\u221A":
+        		if (t2.getText().equals("0")) {
+        			t2.setText("\u221A");
+        			radice = true;
+        		}
+        		break;
+        		
+        	case "x²":
+        		if (potenza == false) {
+        			t2.append("²");
+        			potenza = true;
+        		}
+        		break;
+        		
+        	case "+/-":
+        		if (t2.getText().charAt(0) != '0') {
+	        		if (t2.getText().charAt(0) == '-') {
+	        			t2.setText(t2.getText().substring(1));
+	        		}else{
+	        			t2.setText("-" + t2.getText());
+	        		}
+        		}
+        		break;
+        		
+        	case "C":
+        		t1.setText("0");
+        		t2.setText("0");
+        		radice = false;
+        		potenza = false;
+        		punto = false;
+        		n = 0;
+        		ans = 0;
+        		segno = '?';
+        		break;
+        		
+        	case ".":
+        		if (potenza == false) {
+        			if (punto == false) {
+        				punto = true;
+        				t2.append(".");
+        			}
+        		}
+        		break;
+        		
+        	case "-","+","x","/":
+        		if (segno == '?') {
+        			segno = s.charAt(0);
+        			if (t2.getText().charAt(0) != '0') {
+        				ans = spostaNumeri();
+        				t1.setText(t2.getText() + " " + s);
+        				t2.setText("0");
+        			}else {
+        				t1.setText(ans + " " + s);
+        			}
+        		}
+	        	radice = false;
+	    		potenza = false;
+	    		punto = false;
+        		break;
+        		
+        	case "=":
+        		if (segno == '?') {
+        			ans = spostaNumeri();
+        			t1.setText(t2.getText() + " " + s + " " + ans);
+        		}else {
+        			n = spostaNumeri();
+        			t1.append(" " + t2.getText() + " = ");
+        			switch (segno) {
+        			case '+':
+        				t1.append("" + (n+ans));
+        				ans = n+ans;
+        				break;
+        			case '-':
+        				t1.append("" + (ans-n));
+        				ans = ans-n;
+        				break;
+        			case 'x':
+        				t1.append("" + (n*ans));
+        				ans = n*ans;
+        				break;
+        			case '/':
+        				t1.append("" + (ans/n));
+        				ans = ans/n;
+        				break;
+        			}
+        		}
+        		t2.setText("0");
+        		radice = false;
+        		potenza = false;
+        		punto = false;
+        		segno = '?';
+        		break;
+        	
+        	default:
+        		if (potenza == false) {
+        			if (t2.getText().equals("0")) {
+        				t2.setText(s);
+        			}else {
+        				t2.append(s);
+        			}
+        			
+        		}
+        		break;
+        }
+	}
+}
